@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"http-rest-api/internal/app/apiserver"
 	"log"
+
+	"github.com/SergioBravo/http-rest-api/internal/app/apiserver"
 
 	"github.com/BurntSushi/toml"
 )
