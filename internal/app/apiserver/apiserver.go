@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/SergioBravo/http-rest-api/internal/app/store"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -12,6 +13,7 @@ type APIServer struct {
 	config *Config
 	logger *logrus.Logger
 	router *mux.Router
+	store  *store.Store
 }
 
 func New(config *Config) *APIServer {
@@ -28,6 +30,10 @@ func (s *APIServer) Start() error {
 	}
 
 	s.configureRouter()
+
+	if err := s.configureStore(); err != nil {
+		return err
+	}
 
 	s.logger.Info("Starting api server")
 
@@ -47,6 +53,21 @@ func (s *APIServer) configureLogger() error {
 
 func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/hello", s.handleHello())
+}
+
+func (s *APIServer) configureStore() error {
+	st := store.New(s.config.Store)
+	s.logger.Info("Connecting to database")
+	if err := st.Open(); err != nil {
+		s.logger.WithError(err).Error("Unable to connect to database")
+		return err
+	}
+
+	s.store = st
+
+	s.logger.Info("Database connected!")
+
+	return nil
 }
 
 func (s *APIServer) handleHello() http.HandlerFunc {
